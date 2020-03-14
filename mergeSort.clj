@@ -12,3 +12,15 @@
     )
 )
 ;call like (user/mergeCustom '(1 2 4) '(3 5) '())
+
+(defn sortCustom [arr]
+  (if (< (count arr) 2)
+    arr
+  (mergeCustom 
+    (sortCustom (first (split-at (/ (count arr) 2) arr)))
+    (sortCustom (last (split-at (/ (count arr) 2 ) arr)))
+    '()
+  )
+  )
+)
+;call like (sortCustom '(9 3 8 7 2))
