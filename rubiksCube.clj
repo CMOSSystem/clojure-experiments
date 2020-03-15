@@ -1,3 +1,5 @@
+(require '[clojure.string :as str])
+
 ; A solved cube
 (def solved (hash-map :R '(:R :R :R :R :R :R :R :R :R)
   :U '(:U :U :U :U :U :U :U :U :U)
@@ -17,7 +19,6 @@
 ; Apply single moves ;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-
 ;Return a single face of a state rotated by 90 degrees
 (defn rotate-face [state face]
   (let [substate (face state)]
@@ -34,14 +35,16 @@
   )
   )
 )
+;Double move
 (defn rotate-face-2 [state face]
   (rotate-face (hash-map face (rotate-face state face)) face)
 )
+;Triple move
 (defn rotate-face-3 [state face]
   (rotate-face (hash-map face (rotate-face (hash-map face (rotate-face state face)) face)) face)
 )
 
-;Swap the top third of the 23 face with the 13 face to construct U moves
+;Swap the top third of the 23 face with the 13 face to construct U moves. Returns the modified 23 face
 (defn swap-top [state face23 face13]
   (list
   (first (face13 state))
@@ -133,16 +136,20 @@
   )
 )
 
+(defn apply-stringSequence [moves state]
+  (apply-sequence (str/split moves #" ") state)
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ; Printing functions ;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-;Assign a color for each face.
-(def color-map (hash-map :R "R" :U "U" :L "L" :F "F" :D "D" :B "B"))
+;Assign a color for each face. R=Red, W=White, O=Orange, G=Green, Y=Yellow, B=Blue. Only the first char gets mapped, so R8 is the same as R here
+(def color-map (hash-map ":R" "R" ":U" "W" ":L" "O" ":F" "G" ":D" "Y" ":B" "B"))
 
 ;Get a color for printing
 (defn get-color [state face index]
-  ((nth (face state) index) color-map)
+  (get color-map (str ":" (subs (name (nth (face state) index)) 0 1)))
 )
 
 ;Get three consecutive colors as string for printing
@@ -174,3 +181,5 @@
 ;Example: do a sexy move.
 ;(print-cube (move-u (move-u (move-u (move-r (move-r (move-r (move-u (move-r solved)))))))))
 ;(print-cube (apply-sequence '("R" "U" "R'" "U'") solved))
+;Example: T-Perm. Only swaps 4 pieces.
+;(print-cube (apply-stringSequence "R U R' U' R' F R2 U' R' U' R U R' F'" solved))
