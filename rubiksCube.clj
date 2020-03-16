@@ -1,19 +1,19 @@
 (require '[clojure.string :as str])
 
 ; A solved cube
-(def solved (hash-map :R '(:R :R :R :R :R :R :R :R :R)
+(def solved {:R '(:R :R :R :R :R :R :R :R :R)
   :U '(:U :U :U :U :U :U :U :U :U)
   :F '(:F :F :F :F :F :F :F :F :F)
   :L '(:L :L :L :L :L :L :L :L :L)
   :B '(:B :B :B :B :B :B :B :B :B)
-  :D '(:D :D :D :D :D :D :D :D :D)))
+  :D '(:D :D :D :D :D :D :D :D :D)})
 
-(def test (hash-map :R '(:R1 :R2 :R3 :R4 :R5 :R6 :R7 :R8 :R9)
+(def test {:R '(:R1 :R2 :R3 :R4 :R5 :R6 :R7 :R8 :R9)
 :U '(:U1 :U2 :U3 :U4 :U5 :U6 :U7 :U8 :U9)
 :F '(:F1 :F2 :F3 :F4 :F5 :F6 :F7 :F8 :F9)
 :L '(:L1 :L2 :L3 :L4 :L5 :L6 :L7 :L8 :L9)
 :B '(:B1 :B2 :B3 :B4 :B5 :B6 :B7 :B8 :B9)
-:D '(:D1 :D2 :D3 :D4 :D5 :D6 :D7 :D8 :D9)))
+:D '(:D1 :D2 :D3 :D4 :D5 :D6 :D7 :D8 :D9)})
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ; Apply single moves ;
@@ -103,7 +103,7 @@
   (move-y (move-y (move-y (move-f (move-y state)))))
 )
 
-(defn inverse [move state] (move (move (move state))))
+(defn move-y-opposite [move state] (move-y (move-y (move (move-y (move-y state))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ; Apply move sequences ;
@@ -114,30 +114,32 @@
   "R" (move-r state)
   "F" (move-f state)
   "U" (move-u state)
+  "L" (move-y-opposite move-r state)
+  "B" (move-y-opposite move-f state)
+  "D" (move-x (move-x (move-x (move-f (move-x state)))))
+  "x" (move-x state)
+  "y" (move-y state)
   (print "Unknown move")
   )
 )
 
-(defn apply-nmove [nmove state]
-  (if (= (count nmove) 1) ;single moves like R
-  (apply-move nmove state)
-    (if (= (last nmove) \2); double moves like R2
-    (apply-move nmove (apply-move nmove state))
-    ;triple moves like R'
-    (apply-move nmove (apply-move nmove (apply-move nmove state)))
-    )
-  )
+(defn apply-nmove [state nmove]
+  (let [n (cond
+    (= (count nmove) 1) 1
+    (= (last nmove) \2) 2
+    :else               3)]
+  (->> (iterate (partial apply-move nmove) state)
+    (drop 1)
+    (take n)
+    (last)))
 )
 
-(defn apply-sequence [moves state]
-  (if (empty? moves)
-  state
-  (apply-sequence (rest moves) (apply-nmove (first moves) state))
-  )
+(defn apply-sequence [state moves]
+  (reduce apply-nmove state moves)
 )
 
-(defn apply-stringSequence [moves state]
-  (apply-sequence (str/split moves #" ") state)
+(defn apply-stringSequence [state moves]
+  (reduce apply-nmove state (str/split moves #" "))
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -145,11 +147,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 ;Assign a color for each face. R=Red, W=White, O=Orange, G=Green, Y=Yellow, B=Blue. Only the first char gets mapped, so R8 is the same as R here
-(def color-map (hash-map ":R" "R" ":U" "W" ":L" "O" ":F" "G" ":D" "Y" ":B" "B"))
+(def color-map {"R" "R" "U" "W" "L" "O" "F" "G" "D" "Y" "B" "B"})
 
 ;Get a color for printing
 (defn get-color [state face index]
-  (get color-map (str ":" (subs (name (nth (face state) index)) 0 1)))
+  (let [k (-> state (get face) (nth index) (name) (first) (str))]
+  (get color-map k))
 )
 
 ;Get three consecutive colors as string for printing
@@ -178,8 +181,5 @@
   )
 )
 
-;Example: do a sexy move.
-;(print-cube (move-u (move-u (move-u (move-r (move-r (move-r (move-u (move-r solved)))))))))
-;(print-cube (apply-sequence '("R" "U" "R'" "U'") solved))
 ;Example: T-Perm. Only swaps 4 pieces.
-;(print-cube (apply-stringSequence "R U R' U' R' F R2 U' R' U' R U R' F'" solved))
+;(print-cube (apply-stringSequence solved "R U R' U' R' F R2 U' R' U' R U R' F'"))
