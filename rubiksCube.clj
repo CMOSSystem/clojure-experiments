@@ -172,7 +172,8 @@
   (println "      |" (get-3cons-colors state :U 6) "|")
   (println "-------------------------")
   (println "|" (get-3cons-colors state :L 0) "|" (get-3cons-colors state :F 0) "|" (get-3cons-colors state :R 0) "|" (get-3cons-colors state :B 0) "|")
-  (println "|" (get-3cons-colors state :L 3) "|" (get-3cons-colors state :F 3) "|" (get-3cons-colors state :R 3) "|" (get-3cons-colors state :B 3) "|")(println "|" (get-3cons-colors state :L 6) "|" (get-3cons-colors state :F 6) "|" (get-3cons-colors state :R 6) "|" (get-3cons-colors state :B 6) "|")
+  (println "|" (get-3cons-colors state :L 3) "|" (get-3cons-colors state :F 3) "|" (get-3cons-colors state :R 3) "|" (get-3cons-colors state :B 3) "|")
+  (println "|" (get-3cons-colors state :L 6) "|" (get-3cons-colors state :F 6) "|" (get-3cons-colors state :R 6) "|" (get-3cons-colors state :B 6) "|")
   (println "-------------------------")
   (println "      |" (get-3cons-colors state :D 0) "|")
   (println "      |" (get-3cons-colors state :D 3) "|")
@@ -183,3 +184,31 @@
 
 ;Example: T-Perm. Only swaps 4 pieces.
 ;(print-cube (apply-stringSequence solved "R U R' U' R' F R2 U' R' U' R U R' F'"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Generate random scramble ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def max-scramble-length 25)
+(def opposites {
+  "R" "L" "L" "R"
+  "U" "D" "D" "U"
+  "F" "B" "B" "F"}
+)
+
+(defn next-move [cur-move]
+  (str (rand-nth (into '() (disj #{"R" "U" "F" "D" "B" "L"} (str (first cur-move)) (opposites (str (first cur-move)))))) (rand-nth '("" "'" "2")))
+)
+
+(defn add-move [scr]
+  (if (< (count scr) max-scramble-length)
+  (add-move (flatten (list scr (next-move (last scr)))))
+  scr
+  )
+)
+
+(defn get-scramble []
+  (str/join " " (add-move '()))
+)
+
+;Print randomly scrambled cube: (print-cube (apply-stringSequence solved (get-scramble)))
