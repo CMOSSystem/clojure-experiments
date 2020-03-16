@@ -95,23 +95,19 @@
   )
 )
 
-(defn move-f [state]
-  (move-x (move-x (move-x (move-u (move-x state)))))
+(defn move-x-shift [move state]
+  (move-x (move-x (move-x (move (move-x state)))))
+)
+
+(defn move-y-opposite [move state]
+  (move-y (move-y (move (move-y (move-y state)))))
 )
 
 (defn move-r [state]
   (move-y (move-y (move-y (move-f (move-y state)))))
 )
 
-(defn move-d [state]
-  (move-x (move-x (move-x (move-f (move-x state)))))
-)
-
-(defn move-z [state]
-  (move-y (move-x (move-y (move-y (move-y state)))))
-)
-
-(defn move-y-opposite [move state] (move-y (move-y (move (move-y (move-y state))))))
+(defn move-f [state] (move-x-shift move-u state))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ; Apply move sequences ;
@@ -124,10 +120,10 @@
   "U" (move-u state)
   "L" (move-y-opposite move-r state)
   "B" (move-y-opposite move-f state)
-  "D" (move-d state)
+  "D" (move-x-shift move-f state)
   "x" (move-x state)
   "y" (move-y state)
-  "z" (move-z state)
+  "z" (move-x-shift move-y state)
   (print "Unknown move")
   )
 )
