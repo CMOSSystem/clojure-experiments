@@ -41,14 +41,14 @@
 )
 ;Triple move
 (defn rotate-face-3 [state face]
-  (rotate-face (hash-map face (rotate-face (hash-map face (rotate-face state face)) face)) face)
+  (rotate-face (hash-map face (rotate-face-2 state face)) face)
 )
 
 ;Swap the top third of the 23 face with the 13 face to construct U moves. Returns the modified 23 face
 (defn swap-top [state face23 face13]
   (list
   (first (face13 state))
-  (second (face13 state))
+  (nth (face13 state) 1)
   (nth (face13 state) 2)
   (nth (face23 state) 3)
   (nth (face23 state) 4)
@@ -103,6 +103,14 @@
   (move-y (move-y (move-y (move-f (move-y state)))))
 )
 
+(defn move-d [state]
+  (move-x (move-x (move-x (move-f (move-x state)))))
+)
+
+(defn move-z [state]
+  (move-y (move-x (move-y (move-y (move-y state)))))
+)
+
 (defn move-y-opposite [move state] (move-y (move-y (move (move-y (move-y state))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -116,9 +124,10 @@
   "U" (move-u state)
   "L" (move-y-opposite move-r state)
   "B" (move-y-opposite move-f state)
-  "D" (move-x (move-x (move-x (move-f (move-x state)))))
+  "D" (move-d state)
   "x" (move-x state)
   "y" (move-y state)
+  "z" (move-z state)
   (print "Unknown move")
   )
 )
@@ -182,9 +191,6 @@
   )
 )
 
-;Example: T-Perm. Only swaps 4 pieces.
-;(print-cube (apply-stringSequence solved "R U R' U' R' F R2 U' R' U' R U R' F'"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Generate random scramble ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -211,4 +217,9 @@
   (str/join " " (add-move '()))
 )
 
-;Print randomly scrambled cube: (print-cube (apply-stringSequence solved (get-scramble)))
+
+;Example: T-Perm. Only swaps 4 pieces.
+;(print-cube (apply-stringSequence solved "R U R' U' R' F R2 U' R' U' R U R' F'"))
+;
+;Print randomly scrambled cube:
+;(print-cube (apply-stringSequence solved (get-scramble)))
